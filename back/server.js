@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const convertirVariable = require('./modulos');
@@ -13,14 +14,34 @@ const vk2Port = 102;
 
 const vk3IP = '192.168.16.53';
 const vk3Port = 102;
-
+const inicial =[{
+      nombre: 'inicial',
+      bit0: false,
+      bit1: false,
+      bit2: false,
+      bit3: false,
+      bit4: false,
+      bit5: false,
+      bit6: false,
+      bit7: false
+    }];
+const fallo = [{ nombre: 'FALLO',
+      bit0: false,
+      bit1: false,
+      bit2: false,
+      bit3: false,
+      bit4: false,
+      bit5: false,
+      bit6: false,
+      bit7: true
+    }]
 let connVK1 = new nodes7();
 let connVK2 = new nodes7();
 let connVK3 = new nodes7();
 
-let estadosEstacionesVK1 = [];
-let estadosEstacionesVK2 = [];
-let estadosEstacionesVK3 = [];
+let estadosEstacionesVK1 = inicial;
+let estadosEstacionesVK2 = inicial;
+let estadosEstacionesVK3 = inicial;
 
 const variablesVK1 = {
   prueba:'DB2,X4.0.8'
@@ -76,18 +97,37 @@ const variablesVK3 = {
       m620:'DB2,X284.0.8',
       elv4:'DB2,X324.0.8',
 };
-
-// Configuración y conexión para vk1
-connVK1.initiateConnection({ port: vk1Port, host: vk1IP, rack: 0, slot: 2, debug: false }, connectedVK1);
-
 function connectedVK1(err) {
   if (err) {
     console.log(`Error al conectar con vk1: ${err}`);
-    process.exit();
+    estadosEstacionesVK1 = fallo;
+  } else {
+    connVK1.setTranslationCB(function (tag) { return variablesVK1[tag]; });
+    connVK1.addItems(['prueba']);
+    setInterval(() => { connVK1.readAllItems(valuesReadyVK1); }, 1000);
   }
-  connVK1.setTranslationCB(function(tag) { return variablesVK1[tag]; });
-  connVK1.addItems(['prueba']); // Agrega las variables correspondientes
-  setInterval(() => { connVK1.readAllItems(valuesReadyVK1); }, 1000);
+}
+
+function connectedVK2(err) {
+  if (err) {
+    console.log(`Error al conectar con vk2: ${err}`);
+    estadosEstacionesVK2 = fallo;
+  } else {
+    connVK2.setTranslationCB(function (tag) { return variablesVK2[tag]; });
+    connVK2.addItems(['elv1']);
+    setInterval(() => { connVK2.readAllItems(valuesReadyVK2); }, 1000);
+  }
+}
+
+function connectedVK3(err) {
+  if (err) {
+    console.log(`Error al conectar con vk3: ${err}`);
+    estadosEstacionesVK3 = fallo;
+  } else {
+    connVK3.setTranslationCB(function (tag) { return variablesVK3[tag]; });
+    connVK3.addItems(['elv3']);
+    setInterval(() => { connVK3.readAllItems(valuesReadyVK3); }, 1000);
+  }
 }
 
 function valuesReadyVK1(anythingBad, values) {
@@ -95,35 +135,9 @@ function valuesReadyVK1(anythingBad, values) {
   console.log(estadosEstacionesVK1);
 }
 
-// Configuración y conexión para vk2
-connVK2.initiateConnection({ port: vk2Port, host: vk2IP, rack: 0, slot: 2, debug: false }, connectedVK2);
-
-function connectedVK2(err) {
-  if (err) {
-    console.log(`Error al conectar con vk2: ${err}`);
-    process.exit();
-  }
-  connVK2.setTranslationCB(function(tag) { return variablesVK2[tag]; });
-  connVK2.addItems(['elv1']); // Agrega las variables correspondientes
-  setInterval(() => { connVK2.readAllItems(valuesReadyVK2); }, 1000);
-}
-
 function valuesReadyVK2(anythingBad, values) {
   estadosEstacionesVK2 = convertirVariable(values);
   console.log(estadosEstacionesVK2);
-}
-
-// Configuración y conexión para vk3
-connVK3.initiateConnection({ port: vk3Port, host: vk3IP, rack: 0, slot: 2, debug: false }, connectedVK3);
-
-function connectedVK3(err) {
-  if (err) {
-    console.log(`Error al conectar con vk3: ${err}`);
-    process.exit();
-  }
-  connVK3.setTranslationCB(function(tag) { return variablesVK3[tag]; });
-  connVK3.addItems(['elv3']); // Agrega las variables correspondientes
-  setInterval(() => { connVK3.readAllItems(valuesReadyVK3); }, 1000);
 }
 
 function valuesReadyVK3(anythingBad, values) {
@@ -147,7 +161,58 @@ app.get('/vk3', (req, res) => {
   res.json(estadosEstacionesVK3);
 });
 
+const connectAll = async () => {
+  try {
+    await Promise.all([connectVK1(), connectVK2(), connectVK3()]);
+    console.log('Todas las conexiones establecidas correctamente');
+  } catch (error) {
+    console.log('Error al establecer una o más conexiones. Volviendo a intentar...');
+    setTimeout(connectAll, 60000); // Reintentar conexión después de 60 segundos
+  }
+};
+
+function connectVK1() {
+  return new Promise((resolve, reject) => {
+    connVK1.initiateConnection({ port: vk1Port, host: vk1IP, rack: 0, slot: 2, debug: false }, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        connectedVK1();
+        resolve();
+      }
+    });
+  });
+}
+
+function connectVK2() {
+  return new Promise((resolve, reject) => {
+    connVK2.initiateConnection({ port: vk2Port, host: vk2IP, rack: 0, slot: 2, debug: false }, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        connectedVK2();
+        resolve();
+      }
+    });
+  });
+}
+
+function connectVK3() {
+  return new Promise((resolve, reject) => {
+    connVK3.initiateConnection({ port: vk3Port, host: vk3IP, rack: 0, slot: 2, debug: false }, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        connectedVK3();
+        resolve();
+      }
+    });
+  });
+}
+
 const port = 3000;
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
+  connectAll();
 });
+
