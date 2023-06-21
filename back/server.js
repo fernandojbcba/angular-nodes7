@@ -44,19 +44,38 @@ let estadosEstacionesVK2 = inicial;
 let estadosEstacionesVK3 = inicial;
 
 const variablesVK1 = {
-  prueba:'DB2,X4.0.8'
+  op10:'DB2,X324.0.8',
+  op15:'DB2,X4.0.8',
+  op20:'DB2,X24.0.8',
+  op25:'DB2,X344.0.8',
+  kam30:'DB2,X4.0.8',//modificar
+  op30:'DB2,X40.0.8',
+  op40:'DB2,X64.0.8',
+  op45:'DB2,X4.0.8',//modificar
+  op50:'DB2,X84.0.8',
+  op55:'DB2,X384.0.8',
+  kam60:'DB2,X4.0.8',//modificar
+  op60:'DB2,X100.0.8',
+  op70:'DB2,X124.0.8',
+  op80:'DB2,X144.0.8',
+  op90:'DB2,X4.0.8',//modificar
+  op100:'DB2,X164.0.8',
+  op120:'DB2,X184.0.8',
+  op125:'DB2,X204.0.8',
+  op130:'DB2,X4.0.8',//modificar
+  op140:'DB2,X224.0.8'
 };
 
 const variablesVK2 = {
   elv1:'DB2,X320.0.8',
-  a630:'DB2,X4.0.8',//modificar
+  a630:'DB2,X4.0.8',
   a640:'DB2,X4.0.8',
   sa150:'DB650,X0.0.8',
   a170:'DB2,X44.0.8',
   sa175:'DB650,X10.0.8',
   sa180:'DB650,X20.0.8',
   sa190:'DB650,X30.0.8',
-  s210:'DB2,X4.0.8', //modificar
+  s210:'DB2,X4.0.8',
   a210:'DB2,X384.0.8',
   sa2200:'DB2,X84.0.8',
   sa2201:'DB2,X284.0.8',
@@ -64,21 +83,21 @@ const variablesVK2 = {
   sa2301:'DB2,X588.0.8',
   sa250:'DB2,X124.0.8',
   a2600:'DB2,X144.0.8',
-  a2600:'DB2,X164.0.8',
+  a2601:'DB2,X164.0.8',
   sa270:'DB2,X184.0.8',
   sa280:'DB2,X204.0.8',
   a310:'DB2,X224.0.8',
-  a320:'DB2,X144.0.8',//modificar
-  m330:'DB2,X144.0.8',//modificar
- a330:'DB2,X244.0.8',
+  a320:'DB2,X4.0.8',
+  m330:'DB2,X144.0.8',
+  a330:'DB2,X244.0.8',
   a340:'DB2,X424.0.8',
   sr350:'DB2,X264.0.8',
-  a360:'DB2,404.0.8',
-  elv2:'DB2,X324.0.8',
+  a360:'DB2,X404.0.8',
+  elv2:'DB2,X324.0.8'
 };
 
 const variablesVK3 = {
-  elv3:'DB2,X320.0.8',
+      elv3:'DB2,X320.0.8',
       m370:'DB2,X4.0.8',
       a420:'DB2,X4.0.8',
       a430:'DB552,X18.0.8',
@@ -86,9 +105,9 @@ const variablesVK3 = {
       a470:'DB2,X64.0.8',
       a5300:'DB2,X84.0.8',
       a5301:'DB2,X264.0.8',
-      sr540:'DB2,X104.0.8' , 
-      m550:'DB2,X4.0.8' ,
-      a5600:'DB2,X124.0.8' ,
+      sr540:'DB2,X104.0.8', 
+      m550:'DB2,X4.0.8',
+      a5600:'DB2,X124.0.8',
       a5601:'DB2,X284.0.8',
       s560:'DB2,X224.0.8',
       a580:'DB2,X164.0.8',
@@ -103,7 +122,8 @@ function connectedVK1(err) {
     estadosEstacionesVK1 = fallo;
   } else {
     connVK1.setTranslationCB(function (tag) { return variablesVK1[tag]; });
-    connVK1.addItems(['prueba']);
+    connVK1.addItems(['op10','op15','op20', 'op25','kam30','op30','op40','op45','op50','op55','kam60','op60','op70',
+    'op80', 'op90','op100','op120', 'op125', 'op130','op140']);
     setInterval(() => { connVK1.readAllItems(valuesReadyVK1); }, 1000);
   }
 }
@@ -114,7 +134,9 @@ function connectedVK2(err) {
     estadosEstacionesVK2 = fallo;
   } else {
     connVK2.setTranslationCB(function (tag) { return variablesVK2[tag]; });
-    connVK2.addItems(['elv1']);
+    connVK2.addItems(['elv1','a630','a640','sa150','a170','sa175','sa180','sa190','s210','a210','sa2200','sa2201','sa2300','sa2301','sa250',
+    'a2600','a2601','sa270','sa280','a310','a320','m330','a330','a340','sr350','a360', 'elv2'
+    ]);
     setInterval(() => { connVK2.readAllItems(valuesReadyVK2); }, 1000);
   }
 }
@@ -125,24 +147,25 @@ function connectedVK3(err) {
     estadosEstacionesVK3 = fallo;
   } else {
     connVK3.setTranslationCB(function (tag) { return variablesVK3[tag]; });
-    connVK3.addItems(['elv3']);
+    connVK3.addItems(['elv3', 'm370', 'a420', 'a430', 'a440', 'a470', 'a5300', 'a5301', 'sr540', 'm550', 'a5600', 'a5601', 's560', 'a580', 'a590', 'sr610', 'm620', 'elv4'
+]);
     setInterval(() => { connVK3.readAllItems(valuesReadyVK3); }, 1000);
   }
 }
 
 function valuesReadyVK1(anythingBad, values) {
   estadosEstacionesVK1 = convertirVariable(values);
-  console.log(estadosEstacionesVK1);
+  //console.log(estadosEstacionesVK1);
 }
 
 function valuesReadyVK2(anythingBad, values) {
   estadosEstacionesVK2 = convertirVariable(values);
-  console.log(estadosEstacionesVK2);
+  //console.log(estadosEstacionesVK2);
 }
 
 function valuesReadyVK3(anythingBad, values) {
   estadosEstacionesVK3 = convertirVariable(values);
-  console.log(estadosEstacionesVK3);
+ // console.log(estadosEstacionesVK3);
 }
 
 // Rutas de API para cada VK

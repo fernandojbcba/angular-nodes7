@@ -2,11 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css']
+  selector: 'app-dashboard-vk3',
+  templateUrl: './dashboard-vk3.component.html',
+  styleUrls: ['./dashboard-vk3.component.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent_vk3 implements OnInit {
   estaciones: any[] = [];
 
   constructor(private http: HttpClient) { }
@@ -21,7 +21,7 @@ export class DashboardComponent implements OnInit {
   }
 
   obtenerEstaciones() {
-    this.http.get<any[]>('http://localhost:3000').subscribe(data => {
+    this.http.get<any[]>('http://localhost:3000/vk3').subscribe(data => {
       this.estaciones = data;
      // console.log(this.estaciones);
     });
