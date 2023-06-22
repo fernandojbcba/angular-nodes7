@@ -42,7 +42,12 @@ let connVK3 = new nodes7();
 let estadosEstacionesVK1 = inicial;
 let estadosEstacionesVK2 = inicial;
 let estadosEstacionesVK3 = inicial;
-
+const variablesOrdenadasvk1= ['op10','op15','op20', 'op25','kam30','op30','op40','op45','op50','op55','kam60','op60','op70',
+'op80', 'op90','op100','op120', 'op125', 'op130','op140']
+const variablesOrdenadasvk2=['elv1','a630','a640','sa150','a170','sa175','sa180','sa190','s210','a210','sa2200','sa2201','sa2300','sa2301','sa250',
+'a2600','a2601','sa270','sa280','a310','a320','m330','a330','a340','sr350','a360', 'elv2']
+const variablesOrdenadasvk3=['elv3', 'm370', 'a420', 'a430', 'a440', 'a470', 'a5300', 'a5301', 'sr540', 'm550', 'a5600', 'a5601', 's560', 'a580', 'a590', 'sr610', 'm620', 'elv4'
+]
 const variablesVK1 = {
   op10:'DB2,X324.0.8',
   op15:'DB2,X4.0.8',
@@ -122,8 +127,7 @@ function connectedVK1(err) {
     estadosEstacionesVK1 = fallo;
   } else {
     connVK1.setTranslationCB(function (tag) { return variablesVK1[tag]; });
-    connVK1.addItems(['op10','op15','op20', 'op25','kam30','op30','op40','op45','op50','op55','kam60','op60','op70',
-    'op80', 'op90','op100','op120', 'op125', 'op130','op140']);
+    connVK1.addItems(variablesOrdenadasvk1);
     setInterval(() => { connVK1.readAllItems(valuesReadyVK1); }, 1000);
   }
 }
@@ -134,9 +138,7 @@ function connectedVK2(err) {
     estadosEstacionesVK2 = fallo;
   } else {
     connVK2.setTranslationCB(function (tag) { return variablesVK2[tag]; });
-    connVK2.addItems(['elv1','a630','a640','sa150','a170','sa175','sa180','sa190','s210','a210','sa2200','sa2201','sa2300','sa2301','sa250',
-    'a2600','a2601','sa270','sa280','a310','a320','m330','a330','a340','sr350','a360', 'elv2'
-    ]);
+    connVK2.addItems(variablesOrdenadasvk2);
     setInterval(() => { connVK2.readAllItems(valuesReadyVK2); }, 1000);
   }
 }
@@ -147,24 +149,24 @@ function connectedVK3(err) {
     estadosEstacionesVK3 = fallo;
   } else {
     connVK3.setTranslationCB(function (tag) { return variablesVK3[tag]; });
-    connVK3.addItems(['elv3', 'm370', 'a420', 'a430', 'a440', 'a470', 'a5300', 'a5301', 'sr540', 'm550', 'a5600', 'a5601', 's560', 'a580', 'a590', 'sr610', 'm620', 'elv4'
-]);
+    connVK3.addItems(variablesOrdenadasvk3);
     setInterval(() => { connVK3.readAllItems(valuesReadyVK3); }, 1000);
   }
 }
 
 function valuesReadyVK1(anythingBad, values) {
-  estadosEstacionesVK1 = convertirVariable(values);
-  //console.log(estadosEstacionesVK1);
+  
+  estadosEstacionesVK1 = convertirVariable(values,variablesOrdenadasvk1);
+  console.log(estadosEstacionesVK1);
 }
 
 function valuesReadyVK2(anythingBad, values) {
-  estadosEstacionesVK2 = convertirVariable(values);
+  estadosEstacionesVK2 = convertirVariable(values,variablesOrdenadasvk2);
   //console.log(estadosEstacionesVK2);
 }
 
 function valuesReadyVK3(anythingBad, values) {
-  estadosEstacionesVK3 = convertirVariable(values);
+  estadosEstacionesVK3 = convertirVariable(values,variablesOrdenadasvk3);
  // console.log(estadosEstacionesVK3);
 }
 
