@@ -21,7 +21,7 @@ export class DashboardComponent_vk1 implements OnInit {
   }
 
   obtenerEstaciones() {
-    this.http.get<any[]>('http://localhost:3000/vk1').subscribe(data => {
+    this.http.get<any[]>('http://localhost:3050/vk1').subscribe(data => {
       this.estaciones = data;
      // console.log(this.estaciones);
     });
@@ -40,7 +40,7 @@ export class DashboardComponent_vk1 implements OnInit {
         return {};
       }
     } else {
-      return { violeta: true };
+      return { rojo: true };
     }
   }
 }

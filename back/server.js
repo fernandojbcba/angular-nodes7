@@ -64,17 +64,17 @@ const variablesVK1 = {
   op100:'DB5,X15.0.8',
   op120:'DB5,X16.0.8',
   op125:'DB5,X17.0.8',
-  op130:'DB5,X18.8',
+  op130:'DB5,X18.0.8',
   op140:'DB5,X19.0.8',
   op140s:'DB5,X20.0.8',
   elv1:'DB5,X26.0.8',
   op630:'DB5,X27.0.8',
   op640:'DB5,X28.0.8',
-  op150:'DB650,X29.0.8',
+  op150:'DB5,X29.0.8',
   op170:'DB5,X30.0.8',
-  op175:'DB650,X31.0.8',
-  op180:'DB650,X32.0.8',
-  op190:'DB650,X33.0.8',
+  op175:'DB5,X31.0.8',
+  op180:'DB5,X32.0.8',
+  op190:'DB5,X33.0.8',
   op210:'DB5,X34.0.8',
   op215:'DB5,X35.0.8',
   op2200:'DB5,X36.0.8',
@@ -98,7 +98,7 @@ const variablesVK1 = {
   elv3:'DB5,X64.0.8',
   m370:'DB5,X65.0.8',
   op420:'DB5,X68.0.8',
-  op430:'DB552,X69.0.8',
+  op430:'DB5,X69.0.8',
   op430s:'DB5,X70.0.8',
   op440:'DB5,X71.0.8',
   op470:'DB5,X72.0.8',
@@ -116,7 +116,7 @@ const variablesVK1 = {
   op600:'DB5,X86.0.8',
   sr610:'DB5,X87.0.8',
   m620:'DB5,X88.0.8',
-  elv4:'DB5,X89.0.8',
+  elv4:'DB5,X89.0.8'
 };
 
 const variablesVK2 = {
@@ -240,7 +240,7 @@ function connectVK3() {
   });
 }
 
-const port = 3000;
+const port = 3050;
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
   connectAll();

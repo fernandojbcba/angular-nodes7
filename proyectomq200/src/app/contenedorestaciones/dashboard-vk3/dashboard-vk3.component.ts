@@ -21,7 +21,7 @@ export class DashboardComponent_vk3 implements OnInit {
   }
 
   obtenerEstaciones() {
-    this.http.get<any[]>('http://localhost:3000/vk3').subscribe(data => {
+    this.http.get<any[]>('http://localhost:3050/vk3').subscribe(data => {
       this.estaciones = data;
      // console.log(this.estaciones);
     });
