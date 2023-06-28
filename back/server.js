@@ -246,3 +246,109 @@ app.listen(port, () => {
   connectAll();
 });
 
+// Importa las bibliotecas necesarias
+const Sequelize = require('sequelize');
+const moment = require('moment');
+
+// Crea una instancia de Sequelize para conectarte a la base de datos
+const sequelize = new Sequelize('xAcademy', 'root', 'vitto0712$', {
+  host: 'localhost',
+  dialect: 'mysql'
+});
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Conexión exitosa a la base de datos.');
+  })
+  .catch((error) => {
+    console.error('Error al conectar a la base de datos:', error);
+  });
+// Define el modelo de la tabla para almacenar los datos
+const EstadoEstacion = sequelize.define('EstadoEstacion', {
+  nombre: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  tiempoEncendida: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  },
+  tiempoBasica: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  },
+  tiempoAutomatico: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  },
+  tiempoManual: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  },
+  tiempoFalloTecnico: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  },
+  tiempoEmergencia: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  },
+  tiempoRejillaAbierta: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  },
+  tiempoProduccion: {
+    type: Sequelize.STRING,
+    defaultValue: '00:00:00'
+  }
+});
+
+// Sincroniza el modelo con la base de datos (crea la tabla si no existe)
+EstadoEstacion.sync();
+
+// Función para contar el tiempo en formato "hr:mm:ss"
+function contarTiempo(estado) {
+  const inicio = moment();
+  let tiempo = moment.duration(estado.tiempo);
+
+  if (estado.activo) {
+    tiempo.add(moment().diff(inicio));
+  }
+
+  return moment.utc(tiempo.as('milliseconds')).format('HH:mm:ss');
+}
+
+// Función para guardar los datos en la base de datos
+function guardarDatos(estados) {
+  estados.forEach((estado) => {
+    EstadoEstacion.findOne({ where: { nombre: estado.nombre } }).then((registro) => {
+      if (registro) {
+        registro.update({
+          tiempoEncendida: contarTiempo({ tiempo: registro.tiempoEncendida, activo: estado.bit0 }),
+          tiempoBasica: contarTiempo({ tiempo: registro.tiempoBasica, activo: estado.bit1 }),
+          tiempoAutomatico: contarTiempo({ tiempo: registro.tiempoAutomatico, activo: estado.bit2 }),
+          tiempoManual: contarTiempo({ tiempo: registro.tiempoManual, activo: estado.bit3 }),
+          tiempoFalloTecnico: contarTiempo({ tiempo: registro.tiempoFalloTecnico, activo: estado.bit4 }),
+          tiempoEmergencia: contarTiempo({ tiempo: registro.tiempoEmergencia, activo: estado.bit5 }),
+          tiempoRejillaAbierta: contarTiempo({ tiempo: registro.tiempoRejillaAbierta, activo: estado.bit6 }),
+          tiempoProduccion: contarTiempo({ tiempo: registro.tiempoProduccion, activo: estado.bit7 })
+        });
+      } else {
+        EstadoEstacion.create({
+          nombre: estado.nombre,
+          tiempoEncendida: contarTiempo({ tiempo: '00:00:00', activo: estado.bit0 }),
+          tiempoBasica: contarTiempo({ tiempo: '00:00:00', activo: estado.bit1 }),
+          tiempoAutomatico: contarTiempo({ tiempo: '00:00:00', activo: estado.bit2 }),
+          tiempoManual: contarTiempo({ tiempo: '00:00:00', activo: estado.bit3 }),
+          tiempoFalloTecnico: contarTiempo({ tiempo: '00:00:00', activo: estado.bit4 }),
+          tiempoEmergencia: contarTiempo({ tiempo: '00:00:00', activo: estado.bit5 }),
+          tiempoRejillaAbierta: contarTiempo({ tiempo: '00:00:00', activo: estado.bit6 }),
+          tiempoProduccion: contarTiempo({ tiempo: '00:00:00', activo: estado.bit7 })
+        });
+      }
+    });
+  });
+}
+
+// Llama a la función para guardar los datos en la base de datos
+guardarDatos(estadosEstacionesVK1);
