@@ -133,9 +133,23 @@ function connectedVK1(err) {
   } else {
     connVK1.setTranslationCB(function (tag) { return variablesVK1[tag]; });
     connVK1.addItems(variablesOrdenadasvk1);
-    setInterval(() => { connVK1.readAllItems(valuesReadyVK1); }, 1000);
+    //connVK1.readAllItems(valuesReadyVK1)
+    setInterval(() => { ejecutarEnParalelo().catch(function(error) {
+      console.log('Error:', error) }, 1000)
+    
+    })
+   
   }
+} 
+async function ejecutarEnParalelo() {
+  const resultado1 = await connVK1.readAllItems(valuesReadyVK1);
+  
+  const resultado2 = await guardarTiemposEstaciones(estadosEstacionesVK1);
+  console.log('Resultado de la función 1:', resultado1);
+  console.log('Resultado de la función 2:', resultado2);
 }
+
+
 
 function connectedVK2(err) {
   if (err) {
@@ -162,7 +176,7 @@ function connectedVK3(err) {
 function valuesReadyVK1(anythingBad, values) {
   
   estadosEstacionesVK1 = convertirVariable(values,variablesOrdenadasvk1);
-  console.log(estadosEstacionesVK1);
+ // console.log(estadosEstacionesVK1);
 }
 
 function valuesReadyVK2(anythingBad, values) {
@@ -240,6 +254,7 @@ function connectVK3() {
   });
 }
 
+
 const port = 3050;
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
@@ -251,7 +266,7 @@ const Sequelize = require('sequelize');
 const moment = require('moment');
 
 // Crea una instancia de Sequelize para conectarte a la base de datos
-const sequelize = new Sequelize('xAcademy', 'root', 'vitto0712$', {
+const sequelize = new Sequelize('mq200', 'root', 'Masterkey1', {
   host: 'localhost',
   dialect: 'mysql'
 });
@@ -306,49 +321,56 @@ const EstadoEstacion = sequelize.define('EstadoEstacion', {
 // Sincroniza el modelo con la base de datos (crea la tabla si no existe)
 EstadoEstacion.sync();
 
-// Función para contar el tiempo en formato "hr:mm:ss"
-function contarTiempo(estado) {
-  const inicio = moment();
-  let tiempo = moment.duration(estado.tiempo);
 
-  if (estado.activo) {
-    tiempo.add(moment().diff(inicio));
+function calcularTiempoEstado(estado) {
+  let tiempo = estado ? new Date() : null;
+  return tiempo;
+}
+function calcularTiempoDiferencia(inicio, fin) {
+  let diferencia = fin - inicio; // Calcula la diferencia en milisegundos
+  let segundos = Math.floor(diferencia / 1000) % 60;
+  let minutos = Math.floor(diferencia / 1000 / 60) % 60;
+  let horas = Math.floor(diferencia / 1000 / 60 / 60);
+
+  return horas.toString().padStart(2, '0') + ':' +
+         minutos.toString().padStart(2, '0') + ':' +
+         segundos.toString().padStart(2, '0');
+}
+let tiemposEstaciones = {};
+
+for (const estacion of estadosEstacionesVK1) {
+  tiemposEstaciones[estacion.nombre] = {
+    tiempoEncendida: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit0), calcularTiempoEstado(!estacion.bit0)),
+    tiempoBasica: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit1), calcularTiempoEstado(!estacion.bit1)),
+    tiempoAutomatico: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit2), calcularTiempoEstado(!estacion.bit2)),
+    tiempoManual: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit3), calcularTiempoEstado(!estacion.bit3)),
+    tiempoFalloTecnico: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit4), calcularTiempoEstado(!estacion.bit4)),
+    tiempoEmergencia: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit5), calcularTiempoEstado(!estacion.bit5)),
+    tiempoRejillaAbierta: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit6), calcularTiempoEstado(!estacion.bit6)),
+    tiempoProduccion: calcularTiempoDiferencia(calcularTiempoEstado(estacion.bit7), calcularTiempoEstado(!estacion.bit7))
+  };
+}
+async function guardarTiemposEstaciones(tiemposEstaciones) {
+  try {
+    await EstadoEstacion.sync(); // Crea automáticamente la tabla si no existe
+
+    // Itera sobre los nombres de las estaciones y actualiza o crea un nuevo registro en la base de datos
+    for (const nombreEstacion in tiemposEstaciones) {
+      await EstadoEstacion.upsert({
+        nombre: nombreEstacion,
+        ...tiemposEstaciones[nombreEstacion]
+      });
+    }
+
+    console.log('Tiempos actualizados en la base de datos');
+  } catch (error) {
+    console.error('Error al guardar los tiempos en la base de datos:', error);
   }
-
-  return moment.utc(tiempo.as('milliseconds')).format('HH:mm:ss');
 }
 
-// Función para guardar los datos en la base de datos
-function guardarDatos(estados) {
-  estados.forEach((estado) => {
-    EstadoEstacion.findOne({ where: { nombre: estado.nombre } }).then((registro) => {
-      if (registro) {
-        registro.update({
-          tiempoEncendida: contarTiempo({ tiempo: registro.tiempoEncendida, activo: estado.bit0 }),
-          tiempoBasica: contarTiempo({ tiempo: registro.tiempoBasica, activo: estado.bit1 }),
-          tiempoAutomatico: contarTiempo({ tiempo: registro.tiempoAutomatico, activo: estado.bit2 }),
-          tiempoManual: contarTiempo({ tiempo: registro.tiempoManual, activo: estado.bit3 }),
-          tiempoFalloTecnico: contarTiempo({ tiempo: registro.tiempoFalloTecnico, activo: estado.bit4 }),
-          tiempoEmergencia: contarTiempo({ tiempo: registro.tiempoEmergencia, activo: estado.bit5 }),
-          tiempoRejillaAbierta: contarTiempo({ tiempo: registro.tiempoRejillaAbierta, activo: estado.bit6 }),
-          tiempoProduccion: contarTiempo({ tiempo: registro.tiempoProduccion, activo: estado.bit7 })
-        });
-      } else {
-        EstadoEstacion.create({
-          nombre: estado.nombre,
-          tiempoEncendida: contarTiempo({ tiempo: '00:00:00', activo: estado.bit0 }),
-          tiempoBasica: contarTiempo({ tiempo: '00:00:00', activo: estado.bit1 }),
-          tiempoAutomatico: contarTiempo({ tiempo: '00:00:00', activo: estado.bit2 }),
-          tiempoManual: contarTiempo({ tiempo: '00:00:00', activo: estado.bit3 }),
-          tiempoFalloTecnico: contarTiempo({ tiempo: '00:00:00', activo: estado.bit4 }),
-          tiempoEmergencia: contarTiempo({ tiempo: '00:00:00', activo: estado.bit5 }),
-          tiempoRejillaAbierta: contarTiempo({ tiempo: '00:00:00', activo: estado.bit6 }),
-          tiempoProduccion: contarTiempo({ tiempo: '00:00:00', activo: estado.bit7 })
-        });
-      }
-    });
-  });
-}
+// Llama a la función para guardar los tiempos en la base de datos
+;
 
-// Llama a la función para guardar los datos en la base de datos
-guardarDatos(estadosEstacionesVK1);
+
+
+
