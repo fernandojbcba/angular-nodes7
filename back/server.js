@@ -157,16 +157,10 @@ function connectedVK1(err) {
     connVK1.setTranslationCB(function (tag) { return variablesVK1[tag]; });
     connVK1.addItems(variablesOrdenadasvk1);
    setInterval(() => { connVK1.readAllItems(valuesReadyVK1) }, 500);
-  setInterval(() => {comprobarCambios() }, 500);
-   
-   
+   setInterval(() => {comprobarCambios() }, 1000);
+     
   }
 }
-
-
-
-// Llamar a la función dentro de setInterval para medir su tiempo de ejecución repetidamente
-
 
 function connectedVK2(err) {
   if (err) {
