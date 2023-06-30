@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,7 +12,9 @@
     "@angular/cli": "^16.1.0",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "mysql2": "^3.4.2",
     "node": "^20.2.0",
-    "nodes7": "^0.3.18"
+    "nodes7": "^0.3.18",
+    "sequelize": "^6.32.1"
   }
 }

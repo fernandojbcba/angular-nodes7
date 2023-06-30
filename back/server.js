@@ -3,8 +3,31 @@ const express = require('express');
 const cors = require('cors');
 const convertirVariable = require('./modulos');
 const nodes7 = require('./node_modules/nodes7');
+const { Sequelize, Op , DataTypes } = require('sequelize');
 const app = express();
 app.use(cors());
+
+
+// Configuración de la conexión a la base de datos
+const sequelize = new Sequelize('mq200', 'root', 'Masterkey1', {
+  host: 'localhost',
+  dialect: 'mysql' // Reemplaza con el dialecto correspondiente a tu base de datos
+
+});
+async function conexionok(){
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+    (async () => {
+      await sequelize.sync();
+    })();
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+}
+conexionok()
+// Definición del modelo de la tabla EstacionTiempo
+
 
 const vk1IP = '192.168.16.50';
 const vk1Port = 102;
@@ -133,9 +156,17 @@ function connectedVK1(err) {
   } else {
     connVK1.setTranslationCB(function (tag) { return variablesVK1[tag]; });
     connVK1.addItems(variablesOrdenadasvk1);
-    setInterval(() => { connVK1.readAllItems(valuesReadyVK1); }, 1000);
+   setInterval(() => { connVK1.readAllItems(valuesReadyVK1) }, 500);
+  setInterval(() => {comprobarCambios() }, 500);
+   
+   
   }
 }
+
+
+
+// Llamar a la función dentro de setInterval para medir su tiempo de ejecución repetidamente
+
 
 function connectedVK2(err) {
   if (err) {
@@ -155,14 +186,15 @@ function connectedVK3(err) {
   } else {
     connVK3.setTranslationCB(function (tag) { return variablesVK3[tag]; });
     connVK3.addItems(variablesOrdenadasvk3);
-    setInterval(() => { connVK3.readAllItems(valuesReadyVK3); }, 1000);
+    setInterval(() => { connVK3.readAllItems(valuesReadyVK3)}, 1000);
+    
   }
 }
 
 function valuesReadyVK1(anythingBad, values) {
   
   estadosEstacionesVK1 = convertirVariable(values,variablesOrdenadasvk1);
-  console.log(estadosEstacionesVK1);
+ // console.log(estadosEstacionesVK1);
 }
 
 function valuesReadyVK2(anythingBad, values) {
@@ -240,9 +272,52 @@ function connectVK3() {
   });
 }
 
+
+
+let estadosEstacionesVK1Anterior = []; // Valor anterior de la variable
+// se ejecutará cuando haya cambios en estaciones VK1
+function ejecutarFuncionX(nombre, bitAnterior, bitActual,estacionActual,estacionAnterior) {
+  console.log(`Se detectó un cambio estacion Actual ${estacionActual}`);
+  console.log(`Se detectó un cambio estacion anterior ${estacionAnterior}`);
+  console.log(`Se detectó un cambio en el bit ${nombre}`);
+  console.log(`Bit anterior: ${bitAnterior}`);
+  console.log(`Bit actual: ${bitActual}`);
+}
+// Función para comprobar cambios en la variable
+function comprobarCambios() {
+  // Comprobar si algún bit del contenido ha cambiado
+  const longitud = estadosEstacionesVK1.length;
+  if (longitud === estadosEstacionesVK1Anterior.length) {
+    for (let i = 0; i < longitud; i++) {
+      const elementoActual = estadosEstacionesVK1[i];
+      const elementoAnterior = estadosEstacionesVK1Anterior[i];
+      const propiedades = Object.keys(elementoActual);
+      const estacionAnterior = elementoAnterior.nombre
+      const estacionActual = elementoActual.nombre
+
+      for (let j = 1; j < propiedades.length; j++) {
+      
+        const propiedad = propiedades[j];
+        const bitAnterior = elementoAnterior[propiedad];
+        const bitActual = elementoActual[propiedad];
+
+        if (bitAnterior !== bitActual) {
+          ejecutarFuncionX(propiedad, bitAnterior, bitActual, estacionActual,estacionAnterior);
+        }
+      }
+    }
+  }
+  // Actualizar el valor anterior para la siguiente comprobación
+  estadosEstacionesVK1Anterior = estadosEstacionesVK1.slice();
+}
+
+
+
+
 const port = 3050;
 app.listen(port, () => {
   console.log(`Servidor escuchando en el puerto ${port}`);
   connectAll();
+  
 });
 
