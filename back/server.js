@@ -160,7 +160,16 @@ function connectedVK1(err) {
    setInterval(() => {comprobarCambios() }, 1000);
      
   }
+} 
+async function ejecutarEnParalelo() {
+  const resultado1 = await connVK1.readAllItems(valuesReadyVK1);
+  
+  const resultado2 = await guardarTiemposEstaciones(estadosEstacionesVK1);
+  console.log('Resultado de la función 1:', resultado1);
+  console.log('Resultado de la función 2:', resultado2);
 }
+
+
 
 function connectedVK2(err) {
   if (err) {
@@ -314,4 +323,3 @@ app.listen(port, () => {
   connectAll();
   
 });
-
